@@ -115,8 +115,6 @@ export default function CardsPage() {
           />
         </div>
       </div>
-
-      <DeckPanel deck={deck} removeCard={removeCard} clearDeck={clearDeck} />
     </main>
   );
 }
