@@ -40,6 +40,16 @@ export default function CardsPage() {
 
     setDeck([...deck, card]);
   };
+  const removeCard = (name: string) => {
+    const index = deck.findIndex((card) => card.name === name);
+
+    if (index === -1) return;
+
+    const newDeck = [...deck];
+    newDeck.splice(index, 1);
+
+    setDeck(newDeck);
+  };
   console.log(cards);
   console.log(cards[0]);
   return (
@@ -72,7 +82,17 @@ export default function CardsPage() {
                 className="flex justify-between rounded border p-3"
               >
                 <span>{name}</span>
-                <span>×{count}</span>
+
+                <div className="flex gap-4">
+                  <span>×{count}</span>
+
+                  <button
+                    onClick={() => removeCard(name)}
+                    className="rounded bg-red-500 px-3 text-white"
+                  >
+                    −
+                  </button>
+                </div>
               </div>
             ))}
           </div>
