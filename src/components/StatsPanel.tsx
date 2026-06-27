@@ -74,23 +74,23 @@ export default function StatsPanel({ deck, viewMode, onToggleView }: Props) {
   const trigger = deck.filter((c) => c.isTrigger).length;
 
   return (
-    <div className="mb-6 grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4 px-2">
       {/* =====================
-          コスト分布（棒グラフ維持）
+          コスト分布（改善：高さ・余白調整）
       ===================== */}
-      <div className="col-span-2 rounded-xl bg-white p-4 shadow">
+      <div className="md:col-span-2 rounded-xl bg-white p-4 shadow">
         <div className="mb-3 font-bold text-black">コスト分布（{total}枚）</div>
 
-        <div className="flex items-end gap-2 h-36">
+        <div className="flex items-end gap-2 h-32">
           {costList.map((item) => {
             const height = (item.count / max) * 100;
 
             return (
               <div
                 key={item.cost}
-                className="flex flex-col items-center flex-1"
+                className="flex flex-col items-center flex-1 min-w-0"
               >
-                <div className="relative w-6 h-32 flex items-end">
+                <div className="relative w-6 h-28 flex items-end">
                   <div
                     className="w-full bg-blue-500 rounded-t"
                     style={{ height: `${height}%` }}
@@ -103,7 +103,9 @@ export default function StatsPanel({ deck, viewMode, onToggleView }: Props) {
                   )}
                 </div>
 
-                <div className="text-xs text-gray-600 mt-1">{item.cost}</div>
+                <div className="text-[10px] text-gray-600 mt-1">
+                  {item.cost}
+                </div>
               </div>
             );
           })}
@@ -111,7 +113,7 @@ export default function StatsPanel({ deck, viewMode, onToggleView }: Props) {
       </div>
 
       {/* =====================
-          文明
+          文明（幅安定化）
       ===================== */}
       <div className="rounded-xl bg-white p-4 shadow">
         <div className="mb-2 font-bold text-black">文明分布</div>
@@ -145,9 +147,9 @@ export default function StatsPanel({ deck, viewMode, onToggleView }: Props) {
       </div>
 
       {/* =====================
-          右サイド
+          右側（UI整理）
       ===================== */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {/* Sトリガー */}
         <div className="rounded-xl bg-white p-4 shadow">
           <div className="font-bold text-black">S・トリガー</div>
@@ -164,9 +166,7 @@ export default function StatsPanel({ deck, viewMode, onToggleView }: Props) {
           <div>その他：{other}枚</div>
         </div>
 
-        {/* =====================
-            ボタン（状態依存）
-        ===================== */}
+        {/* ボタン */}
         <button
           onClick={onToggleView}
           className="w-full rounded-xl bg-black p-3 text-white font-bold hover:opacity-80"

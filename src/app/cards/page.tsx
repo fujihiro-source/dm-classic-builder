@@ -26,7 +26,6 @@ export default function CardsPage() {
   const [viewMode, setViewMode] = useState<"build" | "view">("build");
 
   const selectedDeck = decks.find((d) => d.id === selectedDeckId) ?? null;
-
   const deck = selectedDeck?.cards ?? [];
 
   // =====================
@@ -63,14 +62,14 @@ export default function CardsPage() {
   }, [decks]);
 
   // =====================
-  // ★唯一のソート（コスト順）
+  // ソート（コスト順）
   // =====================
   const sortDeck = (list: Card[]) => {
     return [...list].sort((a, b) => a.cost - b.cost);
   };
 
   // =====================
-  // 追加（完全版）
+  // 追加
   // =====================
   const addCard = (card: Card) => {
     if (!selectedDeck) return;
@@ -96,7 +95,7 @@ export default function CardsPage() {
   };
 
   // =====================
-  // 削除（順番保持）
+  // 削除
   // =====================
   const removeCard = (name: string) => {
     if (!selectedDeck) return;
@@ -182,9 +181,6 @@ export default function CardsPage() {
     setSelectedDeckId(copy.id);
   };
 
-  // =====================
-  // view切替
-  // =====================
   const toggleView = () => {
     setViewMode((v) => (v === "build" ? "view" : "build"));
   };
@@ -201,56 +197,65 @@ export default function CardsPage() {
   });
 
   // =====================
-  // UI
+  // UI（レイアウトだけ修正済み）
   // =====================
   return (
-    <main className="min-h-screen bg-gray-100 p-8">
+    <main className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Header */}
       <Header onCreateDeck={createDeck} />
 
-      {/* Stats（常時表示） */}
-      <StatsPanel deck={deck} viewMode={viewMode} onToggleView={toggleView} />
+      {/* Stats */}
+      <div className="px-2">
+        <StatsPanel deck={deck} viewMode={viewMode} onToggleView={toggleView} />
+      </div>
 
       {/* VIEW MODE */}
       {viewMode === "view" ? (
-        <DeckView deck={deck} />
+        <div className="flex-1 overflow-hidden px-2 pb-2">
+          <DeckView deck={deck} />
+        </div>
       ) : (
-        <>
+        <div className="flex-1 overflow-hidden px-2 pb-2">
           {/* search */}
           <input
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             placeholder="カード名検索"
-            className="mb-4 w-full border p-2"
+            className="mb-3 w-full border p-2 rounded"
           />
 
           {/* filter */}
-          <div className="mb-6 flex gap-2">
+          <div className="mb-4 flex flex-wrap gap-2">
             {["全部", "火", "水", "自然", "光", "闇"].map((c) => (
               <button
                 key={c}
                 onClick={() => setCivilization(c)}
-                className="border px-3 py-1"
+                className={`border px-3 py-1 rounded ${
+                  civilization === c ? "bg-black text-white" : ""
+                }`}
               >
                 {c}
               </button>
             ))}
           </div>
 
-          {/* layout */}
-          <div className="grid grid-cols-4 gap-8">
-            {/* left */}
-            <DeckList
-              decks={decks}
-              selectedDeckId={selectedDeckId}
-              onSelect={setSelectedDeckId}
-              onCreate={createDeck}
-              onRename={renameDeck}
-              onDelete={deleteDeck}
-              onDuplicate={duplicateDeck}
-            />
+          {/* 3 panel layout */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 h-full">
+            {/* DeckList */}
+            <div className="md:col-span-1 overflow-y-auto max-h-[60vh]">
+              <DeckList
+                decks={decks}
+                selectedDeckId={selectedDeckId}
+                onSelect={setSelectedDeckId}
+                onCreate={createDeck}
+                onRename={renameDeck}
+                onDelete={deleteDeck}
+                onDuplicate={duplicateDeck}
+              />
+            </div>
 
-            {/* center */}
-            <div className="col-span-2 space-y-3">
+            {/* Card list */}
+            <div className="md:col-span-2 overflow-y-auto max-h-[60vh] space-y-2">
               {filteredCards.map((card) => (
                 <CardItem
                   key={card.id}
@@ -260,10 +265,12 @@ export default function CardsPage() {
               ))}
             </div>
 
-            {/* right */}
-            <DeckPanel deck={deck} onAdd={addCard} onRemove={removeCard} />
+            {/* DeckPanel */}
+            <div className="md:col-span-1 overflow-y-auto max-h-[60vh]">
+              <DeckPanel deck={deck} onAdd={addCard} onRemove={removeCard} />
+            </div>
           </div>
-        </>
+        </div>
       )}
     </main>
   );
