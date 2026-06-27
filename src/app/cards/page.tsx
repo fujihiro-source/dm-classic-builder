@@ -42,7 +42,7 @@ export default function CardsPage() {
       const first: Deck = {
         id: crypto.randomUUID(),
         name: "マイデッキ",
-        ruleId: "classic",
+        ruleId: "2005",
         cards: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -128,7 +128,7 @@ export default function CardsPage() {
     const newDeck: Deck = {
       id: crypto.randomUUID(),
       name: `デッキ${decks.length + 1}`,
-      ruleId: "classic",
+      ruleId: "2005",
       cards: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

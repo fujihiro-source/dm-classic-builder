@@ -14,13 +14,8 @@ export type Card = {
   type: CardType;
 
   isTrigger: boolean;
-};
 
-export type Deck = {
-  id: string;
-  name: string;
-  ruleId: string;
-  cards: Card[];
-  createdAt: string;
-  updatedAt: string;
+  // ⭐カードゲームとして必要な情報
+  race: string; // 種族
+  effect: string; // 効果テキスト
 };
