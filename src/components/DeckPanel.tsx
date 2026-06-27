@@ -1,64 +1,89 @@
-import DeckStats from "./DeckStats";
+"use client";
+
 import type { Card } from "@/types";
 
-type DeckPanelProps = {
+type Props = {
   deck: Card[];
-  removeCard: (name: string) => void;
-  clearDeck: () => void;
+  onAdd: (card: Card) => void;
+  onRemove: (name: string) => void;
 };
 
-export default function DeckPanel({
-  deck,
-  removeCard,
-  clearDeck,
-}: DeckPanelProps) {
-  return (
-    <div className="sticky top-6 rounded-xl bg-white p-6 shadow">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-black">
-          現在のデッキ（{deck.length}枚）
-        </h2>
+export default function DeckPanel({ deck, onAdd, onRemove }: Props) {
+  // =====================
+  // スタック化
+  // =====================
+  const stack: Record<string, { card: Card; count: number }> = {};
 
-        <button
-          onClick={clearDeck}
-          className="rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-        >
-          デッキを空にする
-        </button>
+  deck.forEach((card) => {
+    if (!stack[card.name]) {
+      stack[card.name] = { card, count: 0 };
+    }
+    stack[card.name].count += 1;
+  });
+
+  const list = Object.values(stack);
+
+  return (
+    <div className="rounded-xl bg-white p-4 shadow">
+      {/* 枚数 */}
+      <div className="mb-3 font-bold text-black">
+        デッキ：{deck.length} / 40枚
       </div>
 
-      {/* デッキ分析 */}
-      <DeckStats deck={deck} />
+      {/* =====================
+          スタック表示
+      ===================== */}
+      <div className="space-y-2">
+        {list.map(({ card, count }) => {
+          const canAdd = count < 4;
 
-      {deck.length === 0 ? (
-        <p className="text-gray-500">まだカードがありません。</p>
-      ) : (
-        <div className="space-y-2">
-          {Object.entries(
-            deck.reduce((acc: Record<string, number>, card) => {
-              acc[card.name] = (acc[card.name] || 0) + 1;
-              return acc;
-            }, {}),
-          ).map(([name, count]) => (
+          return (
             <div
-              key={name}
-              className="flex items-center justify-between rounded border p-3"
+              key={card.name}
+              className="flex items-center justify-between border-b py-2"
             >
-              <span className="text-black">{name}</span>
+              {/* 左：カード情報 */}
+              <div className="flex items-center gap-2 text-sm text-black">
+                <div className="w-8 h-10 bg-gray-200 rounded" />
 
-              <div className="flex items-center gap-4">
-                <span className="text-black">×{count}</span>
+                <span>{card.name}</span>
 
+                <span className="text-gray-500">×{count}</span>
+              </div>
+
+              {/* =====================
+                  右：ボタン（逆配置）
+              ===================== */}
+              <div className="flex items-center gap-2 w-[70px] justify-end">
+                {/* ＋（左側に変更） */}
                 <button
-                  onClick={() => removeCard(name)}
-                  className="rounded bg-red-500 px-3 py-1 text-white hover:bg-red-600"
+                  onClick={() => canAdd && onAdd(card)}
+                  disabled={!canAdd}
+                  className={`font-bold px-2 ${
+                    canAdd
+                      ? "text-blue-500"
+                      : "text-gray-300 cursor-not-allowed"
+                  }`}
+                >
+                  ＋
+                </button>
+
+                {/* −（右側） */}
+                <button
+                  onClick={() => onRemove(card.name)}
+                  className="text-red-500 font-bold px-2"
                 >
                   −
                 </button>
               </div>
             </div>
-          ))}
-        </div>
+          );
+        })}
+      </div>
+
+      {/* 空 */}
+      {deck.length === 0 && (
+        <div className="text-gray-400 text-sm mt-4">カードがありません</div>
       )}
     </div>
   );

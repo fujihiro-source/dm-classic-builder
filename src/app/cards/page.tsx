@@ -1,256 +1,270 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import CardItem from "@/components/CardItem";
+
 import Header from "@/components/Header";
-import DeckPanel from "@/components/DeckPanel";
+import StatsPanel from "@/components/StatsPanel";
 import DeckList from "@/components/DeckList";
+import DeckPanel from "@/components/DeckPanel";
+import DeckView from "@/components/DeckView";
+import CardItem from "@/components/CardItem";
+
 import { cards } from "@/data/cards";
 import { loadDecks, saveDecks } from "@/storage/deckStorage";
 import type { Card, Deck } from "@/types";
 
 export default function CardsPage() {
+  // =====================
+  // state
+  // =====================
   const [keyword, setKeyword] = useState("");
   const [civilization, setCivilization] = useState("全部");
+
   const [decks, setDecks] = useState<Deck[]>([]);
   const [selectedDeckId, setSelectedDeckId] = useState("");
 
-  const selectedDeck = decks.find((deck) => deck.id === selectedDeckId) ?? null;
+  const [viewMode, setViewMode] = useState<"build" | "view">("build");
+
+  const selectedDeck = decks.find((d) => d.id === selectedDeckId) ?? null;
 
   const deck = selectedDeck?.cards ?? [];
 
-  const filteredCards = cards.filter((card) => {
-    const matchKeyword = card.name.includes(keyword);
-
-    const matchCivilization =
-      civilization === "全部" || card.civilization === civilization;
-
-    return matchKeyword && matchCivilization;
-  });
-
+  // =====================
+  // 初期ロード
+  // =====================
   useEffect(() => {
-    const savedDecks = loadDecks();
+    const saved = loadDecks();
 
-    if (savedDecks.length > 0) {
-      setDecks(savedDecks);
-      setSelectedDeckId(savedDecks[0].id);
+    if (saved.length > 0) {
+      setDecks(saved);
+      setSelectedDeckId(saved[0].id);
     } else {
-      const firstDeck: Deck = {
+      const first: Deck = {
         id: crypto.randomUUID(),
         name: "マイデッキ",
-        ruleId: "classic2005",
+        ruleId: "classic",
         cards: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
-      setDecks([firstDeck]);
-      setSelectedDeckId(firstDeck.id);
+      setDecks([first]);
+      setSelectedDeckId(first.id);
     }
   }, []);
 
+  // =====================
+  // save
+  // =====================
   useEffect(() => {
     if (decks.length > 0) {
       saveDecks(decks);
     }
   }, [decks]);
 
+  // =====================
+  // ★唯一のソート（コスト順）
+  // =====================
+  const sortDeck = (list: Card[]) => {
+    return [...list].sort((a, b) => a.cost - b.cost);
+  };
+
+  // =====================
+  // 追加（完全版）
+  // =====================
   const addCard = (card: Card) => {
     if (!selectedDeck) return;
 
-    if (selectedDeck.cards.length >= 40) {
-      alert("デッキは40枚までです！");
-      return;
-    }
-
     const count = selectedDeck.cards.filter((c) => c.id === card.id).length;
 
-    if (count >= 4) {
-      alert("同じカードは4枚までです！");
-      return;
-    }
+    if (selectedDeck.cards.length >= 40) return;
+    if (count >= 4) return;
 
-    const updatedDecks = decks.map((d) =>
+    const updatedCards = sortDeck([...selectedDeck.cards, card]);
+
+    const updated = decks.map((d) =>
       d.id === selectedDeckId
         ? {
             ...d,
-            cards: [...d.cards, card],
+            cards: updatedCards,
             updatedAt: new Date().toISOString(),
           }
         : d,
     );
 
-    setDecks(updatedDecks);
+    setDecks(updated);
   };
 
+  // =====================
+  // 削除（順番保持）
+  // =====================
   const removeCard = (name: string) => {
     if (!selectedDeck) return;
 
-    const cards = [...selectedDeck.cards];
+    const list = [...selectedDeck.cards];
 
-    const index = cards.findIndex((card) => card.name === name);
-
+    const index = list.findIndex((c) => c.name === name);
     if (index === -1) return;
 
-    cards.splice(index, 1);
+    list.splice(index, 1);
 
-    const updatedDecks = decks.map((d) =>
+    const updated = decks.map((d) =>
       d.id === selectedDeckId
         ? {
             ...d,
-            cards,
+            cards: list,
             updatedAt: new Date().toISOString(),
           }
         : d,
     );
 
-    setDecks(updatedDecks);
+    setDecks(updated);
   };
 
-  const clearDeck = () => {
-    const updatedDecks = decks.map((d) =>
-      d.id === selectedDeckId
-        ? {
-            ...d,
-            cards: [],
-            updatedAt: new Date().toISOString(),
-          }
-        : d,
-    );
-
-    setDecks(updatedDecks);
-  };
-  const duplicateDeck = (id: string) => {
-    const target = decks.find((d) => d.id === id);
-    if (!target) return;
-
-    const newDeck: Deck = {
-      ...target,
-      id: crypto.randomUUID(),
-      name: `${target.name}（コピー）`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedDecks = [...decks, newDeck];
-
-    setDecks(updatedDecks);
-    setSelectedDeckId(newDeck.id);
-  };
-
+  // =====================
+  // deck操作
+  // =====================
   const createDeck = () => {
     const newDeck: Deck = {
       id: crypto.randomUUID(),
       name: `デッキ${decks.length + 1}`,
-      ruleId: "classic2005",
+      ruleId: "classic",
       cards: [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    const updatedDecks = [...decks, newDeck];
-
-    setDecks(updatedDecks);
+    setDecks([...decks, newDeck]);
     setSelectedDeckId(newDeck.id);
   };
+
   const renameDeck = (id: string) => {
-    const deck = decks.find((d) => d.id === id);
+    const target = decks.find((d) => d.id === id);
+    if (!target) return;
 
-    if (!deck) return;
-
-    const name = prompt("デッキ名を入力してください", deck.name);
-
+    const name = prompt("デッキ名", target.name);
     if (!name) return;
 
-    const updatedDecks = decks.map((d) =>
-      d.id === id
-        ? {
-            ...d,
-            name,
-            updatedAt: new Date().toISOString(),
-          }
-        : d,
+    setDecks(
+      decks.map((d) =>
+        d.id === id ? { ...d, name, updatedAt: new Date().toISOString() } : d,
+      ),
     );
-
-    setDecks(updatedDecks);
   };
+
   const deleteDeck = (id: string) => {
-    if (decks.length === 1) {
-      alert("最後の1つのデッキは削除できません。");
-      return;
-    }
+    if (decks.length === 1) return;
 
-    const ok = confirm("このデッキを削除しますか？");
-
+    const ok = confirm("削除しますか？");
     if (!ok) return;
 
-    const updatedDecks = decks.filter((deck) => deck.id !== id);
-
-    setDecks(updatedDecks);
+    const updated = decks.filter((d) => d.id !== id);
+    setDecks(updated);
 
     if (selectedDeckId === id) {
-      setSelectedDeckId(updatedDecks[0].id);
+      setSelectedDeckId(updated[0].id);
     }
   };
 
+  const duplicateDeck = (id: string) => {
+    const target = decks.find((d) => d.id === id);
+    if (!target) return;
+
+    const copy: Deck = {
+      ...target,
+      id: crypto.randomUUID(),
+      name: target.name + "コピー",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    setDecks([...decks, copy]);
+    setSelectedDeckId(copy.id);
+  };
+
+  // =====================
+  // view切替
+  // =====================
+  const toggleView = () => {
+    setViewMode((v) => (v === "build" ? "view" : "build"));
+  };
+
+  // =====================
+  // filter
+  // =====================
+  const filteredCards = cards.filter((card) => {
+    const matchKeyword = card.name.includes(keyword);
+    const matchCivil =
+      civilization === "全部" || card.civilization === civilization;
+
+    return matchKeyword && matchCivil;
+  });
+
+  // =====================
+  // UI
+  // =====================
   return (
     <main className="min-h-screen bg-gray-100 p-8">
       <Header onCreateDeck={createDeck} />
 
-      <input
-        type="text"
-        placeholder="カード名で検索"
-        value={keyword}
-        onChange={(e) => setKeyword(e.target.value)}
-        className="mb-6 w-full rounded-lg border border-gray-300 bg-white p-3 text-black"
-      />
+      {/* Stats（常時表示） */}
+      <StatsPanel deck={deck} viewMode={viewMode} onToggleView={toggleView} />
 
-      <div className="mb-6 flex flex-wrap gap-2">
-        {["全部", "火", "水", "自然", "光", "闇"].map((civ) => (
-          <button
-            key={civ}
-            onClick={() => setCivilization(civ)}
-            className={`rounded px-4 py-2 ${
-              civilization === civ
-                ? "bg-blue-600 text-white"
-                : "border bg-white"
-            }`}
-          >
-            {civ}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-4 gap-8">
-        {/* 左：デッキ一覧 */}
-        <div>
-          <DeckList
-            decks={decks}
-            selectedDeckId={selectedDeckId}
-            onSelect={setSelectedDeckId}
-            onCreate={createDeck}
-            onRename={renameDeck}
-            onDelete={deleteDeck}
-            onDuplicate={duplicateDeck}
+      {/* VIEW MODE */}
+      {viewMode === "view" ? (
+        <DeckView deck={deck} />
+      ) : (
+        <>
+          {/* search */}
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="カード名検索"
+            className="mb-4 w-full border p-2"
           />
-        </div>
 
-        {/* 中央：カード一覧 */}
-        <div className="col-span-2 space-y-4">
-          {filteredCards.map((card) => (
-            <CardItem key={card.id} card={card} onAdd={() => addCard(card)} />
-          ))}
-        </div>
+          {/* filter */}
+          <div className="mb-6 flex gap-2">
+            {["全部", "火", "水", "自然", "光", "闇"].map((c) => (
+              <button
+                key={c}
+                onClick={() => setCivilization(c)}
+                className="border px-3 py-1"
+              >
+                {c}
+              </button>
+            ))}
+          </div>
 
-        {/* 右：現在のデッキ */}
-        <div>
-          <DeckPanel
-            deck={deck}
-            removeCard={removeCard}
-            clearDeck={clearDeck}
-          />
-        </div>
-      </div>
+          {/* layout */}
+          <div className="grid grid-cols-4 gap-8">
+            {/* left */}
+            <DeckList
+              decks={decks}
+              selectedDeckId={selectedDeckId}
+              onSelect={setSelectedDeckId}
+              onCreate={createDeck}
+              onRename={renameDeck}
+              onDelete={deleteDeck}
+              onDuplicate={duplicateDeck}
+            />
+
+            {/* center */}
+            <div className="col-span-2 space-y-3">
+              {filteredCards.map((card) => (
+                <CardItem
+                  key={card.id}
+                  card={card}
+                  onAdd={() => addCard(card)}
+                />
+              ))}
+            </div>
+
+            {/* right */}
+            <DeckPanel deck={deck} onAdd={addCard} onRemove={removeCard} />
+          </div>
+        </>
+      )}
     </main>
   );
 }
