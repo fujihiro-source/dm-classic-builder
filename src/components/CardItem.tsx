@@ -6,8 +6,6 @@ type CardItemProps = {
 };
 
 export default function CardItem(props: CardItemProps) {
-  console.log("props =", props);
-
   const { card, onAdd } = props;
 
   return (
