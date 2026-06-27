@@ -136,6 +136,27 @@ export default function CardsPage() {
     setDecks(updatedDecks);
     setSelectedDeckId(newDeck.id);
   };
+  const renameDeck = (id: string) => {
+    const deck = decks.find((d) => d.id === id);
+
+    if (!deck) return;
+
+    const name = prompt("デッキ名を入力してください", deck.name);
+
+    if (!name) return;
+
+    const updatedDecks = decks.map((d) =>
+      d.id === id
+        ? {
+            ...d,
+            name,
+            updatedAt: new Date().toISOString(),
+          }
+        : d,
+    );
+
+    setDecks(updatedDecks);
+  };
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
@@ -173,6 +194,7 @@ export default function CardsPage() {
             selectedDeckId={selectedDeckId}
             onSelect={setSelectedDeckId}
             onCreate={createDeck}
+            onRename={renameDeck}
           />
         </div>
 

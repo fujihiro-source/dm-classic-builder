@@ -5,6 +5,7 @@ type Props = {
   selectedDeckId: string;
   onSelect: (id: string) => void;
   onCreate: () => void;
+  onRename: (id: string) => void;
 };
 
 export default function DeckList({
@@ -12,6 +13,7 @@ export default function DeckList({
   selectedDeckId,
   onSelect,
   onCreate,
+  onRename,
 }: Props) {
   return (
     <div className="rounded-xl bg-white p-5 shadow">
@@ -26,19 +28,35 @@ export default function DeckList({
 
       <div className="space-y-2">
         {decks.map((deck) => (
-          <button
+          <div
             key={deck.id}
-            onClick={() => onSelect(deck.id)}
-            className={`w-full rounded border p-3 text-left transition ${
+            className={`rounded border p-3 transition ${
               selectedDeckId === deck.id
                 ? "border-blue-600 bg-blue-50"
                 : "bg-white hover:bg-gray-50"
             }`}
           >
-            <div className="font-semibold text-black">{deck.name}</div>
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => onSelect(deck.id)}
+                className="flex-1 text-left"
+              >
+                <div className="font-semibold text-black">{deck.name}</div>
 
-            <div className="text-sm text-gray-500">{deck.cards.length}枚</div>
-          </button>
+                <div className="text-sm text-gray-500">
+                  {deck.cards.length}枚
+                </div>
+              </button>
+
+              <button
+                onClick={() => onRename(deck.id)}
+                className="ml-2 rounded px-2 py-1 hover:bg-gray-200"
+                title="名前変更"
+              >
+                ✏️
+              </button>
+            </div>
+          </div>
         ))}
       </div>
     </div>
