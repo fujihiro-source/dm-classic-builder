@@ -14,7 +14,10 @@ export default function CardsPage() {
   const [civilization, setCivilization] = useState("全部");
   const [decks, setDecks] = useState<Deck[]>([]);
   const [selectedDeckId, setSelectedDeckId] = useState("");
-  const [deck, setDeck] = useState<Card[]>([]);
+
+  const selectedDeck = decks.find((deck) => deck.id === selectedDeckId) ?? null;
+
+  const deck = selectedDeck?.cards ?? [];
 
   const filteredCards = cards.filter((card) => {
     const matchKeyword = card.name.includes(keyword);
@@ -29,57 +32,114 @@ export default function CardsPage() {
     const savedDecks = loadDecks();
 
     if (savedDecks.length > 0) {
-      setDeck(savedDecks[0].cards);
+      setDecks(savedDecks);
+      setSelectedDeckId(savedDecks[0].id);
+    } else {
+      const firstDeck: Deck = {
+        id: crypto.randomUUID(),
+        name: "マイデッキ",
+        ruleId: "classic2005",
+        cards: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      setDecks([firstDeck]);
+      setSelectedDeckId(firstDeck.id);
     }
   }, []);
 
   useEffect(() => {
-    const deckData: Deck = {
-      id: "default",
-      name: "マイデッキ",
-      ruleId: "classic2005",
-      cards: deck,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    saveDecks([deckData]);
-  }, [deck]);
+    if (decks.length > 0) {
+      saveDecks(decks);
+    }
+  }, [decks]);
 
   const addCard = (card: Card) => {
-    if (deck.length >= 40) {
+    if (!selectedDeck) return;
+
+    if (selectedDeck.cards.length >= 40) {
       alert("デッキは40枚までです！");
       return;
     }
 
-    const count = deck.filter((c) => c.id === card.id).length;
+    const count = selectedDeck.cards.filter((c) => c.id === card.id).length;
 
     if (count >= 4) {
       alert("同じカードは4枚までです！");
       return;
     }
 
-    setDeck([...deck, card]);
+    const updatedDecks = decks.map((d) =>
+      d.id === selectedDeckId
+        ? {
+            ...d,
+            cards: [...d.cards, card],
+            updatedAt: new Date().toISOString(),
+          }
+        : d,
+    );
+
+    setDecks(updatedDecks);
   };
 
   const removeCard = (name: string) => {
-    const index = deck.findIndex((card) => card.name === name);
+    if (!selectedDeck) return;
+
+    const cards = [...selectedDeck.cards];
+
+    const index = cards.findIndex((card) => card.name === name);
 
     if (index === -1) return;
 
-    const newDeck = [...deck];
-    newDeck.splice(index, 1);
+    cards.splice(index, 1);
 
-    setDeck(newDeck);
+    const updatedDecks = decks.map((d) =>
+      d.id === selectedDeckId
+        ? {
+            ...d,
+            cards,
+            updatedAt: new Date().toISOString(),
+          }
+        : d,
+    );
+
+    setDecks(updatedDecks);
   };
 
   const clearDeck = () => {
-    setDeck([]);
+    const updatedDecks = decks.map((d) =>
+      d.id === selectedDeckId
+        ? {
+            ...d,
+            cards: [],
+            updatedAt: new Date().toISOString(),
+          }
+        : d,
+    );
+
+    setDecks(updatedDecks);
+  };
+
+  const createDeck = () => {
+    const newDeck: Deck = {
+      id: crypto.randomUUID(),
+      name: `デッキ${decks.length + 1}`,
+      ruleId: "classic2005",
+      cards: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedDecks = [...decks, newDeck];
+
+    setDecks(updatedDecks);
+    setSelectedDeckId(newDeck.id);
   };
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
-      <Header />
+      <Header onCreateDeck={createDeck} />
 
       <input
         type="text"
@@ -108,7 +168,12 @@ export default function CardsPage() {
       <div className="grid grid-cols-4 gap-8">
         {/* 左：デッキ一覧 */}
         <div>
-          <DeckList selectedDeck="default" />
+          <DeckList
+            decks={decks}
+            selectedDeckId={selectedDeckId}
+            onSelect={setSelectedDeckId}
+            onCreate={createDeck}
+          />
         </div>
 
         {/* 中央：カード一覧 */}
