@@ -120,6 +120,23 @@ export default function CardsPage() {
 
     setDecks(updatedDecks);
   };
+  const duplicateDeck = (id: string) => {
+    const target = decks.find((d) => d.id === id);
+    if (!target) return;
+
+    const newDeck: Deck = {
+      ...target,
+      id: crypto.randomUUID(),
+      name: `${target.name}（コピー）`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const updatedDecks = [...decks, newDeck];
+
+    setDecks(updatedDecks);
+    setSelectedDeckId(newDeck.id);
+  };
 
   const createDeck = () => {
     const newDeck: Deck = {
@@ -214,6 +231,7 @@ export default function CardsPage() {
             onCreate={createDeck}
             onRename={renameDeck}
             onDelete={deleteDeck}
+            onDuplicate={duplicateDeck}
           />
         </div>
 
