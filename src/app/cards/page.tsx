@@ -100,10 +100,20 @@ export default function CardsPage() {
         ))}
       </div>
 
-      <div className="space-y-4">
-        {filteredCards.map((card) => (
-          <CardItem key={card.id} card={card} onAdd={() => addCard(card)} />
-        ))}
+      <div className="grid grid-cols-3 gap-8">
+        <div className="col-span-2 space-y-4">
+          {filteredCards.map((card) => (
+            <CardItem key={card.id} card={card} onAdd={() => addCard(card)} />
+          ))}
+        </div>
+
+        <div>
+          <DeckPanel
+            deck={deck}
+            removeCard={removeCard}
+            clearDeck={clearDeck}
+          />
+        </div>
       </div>
 
       <DeckPanel deck={deck} removeCard={removeCard} clearDeck={clearDeck} />

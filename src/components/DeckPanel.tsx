@@ -12,7 +12,7 @@ export default function DeckPanel({
   clearDeck,
 }: DeckPanelProps) {
   return (
-    <div className="mt-10 rounded-xl bg-white p-6 shadow">
+    <div className="sticky top-6 rounded-xl bg-white p-6 shadow">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-black">
           現在のデッキ（{deck.length}枚）
