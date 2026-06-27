@@ -6,6 +6,7 @@ import { cards } from "@/data/cards";
 import { loadDecks, saveDecks } from "@/storage/deckStorage";
 import type { Card, Deck } from "@/types";
 import DeckPanel from "@/components/DeckPanel";
+import Header from "@/components/Header";
 
 export default function CardsPage() {
   const [keyword, setKeyword] = useState("");
@@ -74,7 +75,7 @@ export default function CardsPage() {
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
-      <h1 className="mb-8 text-4xl font-bold text-blue-700">カード一覧</h1>
+      <Header />
 
       <input
         type="text"

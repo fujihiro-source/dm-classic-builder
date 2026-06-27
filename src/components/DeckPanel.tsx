@@ -1,3 +1,4 @@
+import DeckStats from "./DeckStats";
 import type { Card } from "@/types";
 
 type DeckPanelProps = {
@@ -25,6 +26,9 @@ export default function DeckPanel({
           デッキを空にする
         </button>
       </div>
+
+      {/* デッキ分析 */}
+      <DeckStats deck={deck} />
 
       {deck.length === 0 ? (
         <p className="text-gray-500">まだカードがありません。</p>
