@@ -30,9 +30,7 @@ export default function DeckPanel({ deck, onAdd, onRemove }: Props) {
         デッキ：{deck.length} / 40枚
       </div>
 
-      {/* =====================
-          スタック表示
-      ===================== */}
+      {/* スタック表示 */}
       <div className="space-y-2">
         {list.map(({ card, count }) => {
           const canAdd = count < 4;
@@ -40,22 +38,26 @@ export default function DeckPanel({ deck, onAdd, onRemove }: Props) {
           return (
             <div
               key={card.name}
-              className="flex items-center justify-between border-b py-2"
+              className="flex items-center justify-between border-b py-2 min-w-0 group relative"
             >
-              {/* 左：カード情報 */}
-              <div className="flex items-center gap-2 text-sm text-black">
-                <div className="w-8 h-10 bg-gray-200 rounded" />
+              {/* =====================
+                  左：カード情報
+              ===================== */}
+              <div className="flex items-center gap-2 text-sm text-black min-w-0 flex-1">
+                {/* 画像（ダミー・ホバー用トリガー） */}
+                <div className="w-8 h-10 bg-gray-200 rounded flex-shrink-0 group-hover:scale-105 transition" />
 
-                <span>{card.name}</span>
+                {/* カード名 */}
+                <span className="truncate max-w-full block">{card.name}</span>
 
-                <span className="text-gray-500">×{count}</span>
+                {/* 枚数 */}
+                <span className="text-gray-500 flex-shrink-0">×{count}</span>
               </div>
 
               {/* =====================
-                  右：ボタン（逆配置）
+                  右：ボタン
               ===================== */}
-              <div className="flex items-center gap-2 w-[70px] justify-end">
-                {/* ＋（左側に変更） */}
+              <div className="flex items-center gap-2 w-[70px] justify-end flex-shrink-0">
                 <button
                   onClick={() => canAdd && onAdd(card)}
                   disabled={!canAdd}
@@ -68,7 +70,6 @@ export default function DeckPanel({ deck, onAdd, onRemove }: Props) {
                   ＋
                 </button>
 
-                {/* −（右側） */}
                 <button
                   onClick={() => onRemove(card.name)}
                   className="text-red-500 font-bold px-2"
@@ -76,12 +77,37 @@ export default function DeckPanel({ deck, onAdd, onRemove }: Props) {
                   −
                 </button>
               </div>
+
+              {/* =====================
+                  ホバー詳細 + 画像
+              ===================== */}
+              <div className="absolute left-0 top-full mt-2 hidden group-hover:flex gap-3 z-50 bg-white border shadow-lg p-3 rounded w-72">
+                {/* カード画像（ダミー） */}
+                <div className="w-20 h-28 bg-gray-200 rounded flex-shrink-0" />
+
+                {/* テキスト情報 */}
+                <div className="text-xs text-gray-700 space-y-1">
+                  <div className="font-bold text-sm text-black">
+                    {card.name}
+                  </div>
+
+                  <div>コスト: {card.cost}</div>
+                  <div>文明: {card.civilization}</div>
+                  <div>種族: {card.race}</div>
+                  <div>パワー: {card.power ?? "-"}</div>
+                  {card.isTrigger && (
+                    <div className="text-blue-600 font-bold">S・トリガー</div>
+                  )}
+
+                  <div className="mt-2 text-gray-600">{card.effect}</div>
+                </div>
+              </div>
             </div>
           );
         })}
       </div>
 
-      {/* 空 */}
+      {/* 空デッキ */}
       {deck.length === 0 && (
         <div className="text-gray-400 text-sm mt-4">カードがありません</div>
       )}
