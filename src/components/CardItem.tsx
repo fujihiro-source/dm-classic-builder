@@ -17,9 +17,7 @@ export default function CardItem({ card, onAdd }: CardItemProps) {
   return (
     <div className="flex items-center gap-6 rounded-2xl bg-white p-5 shadow transition hover:shadow-lg">
       {/* 仮画像 */}
-      <div className="flex h-28 w-20 items-center justify-center rounded-lg bg-gray-200 text-3xl">
-        🃏
-      </div>
+      <div className="flex h-28 w-20 items-center justify-center rounded-lg bg-gray-200 text-3xl"></div>
 
       {/* カード情報 */}
       <div className="flex-1">
