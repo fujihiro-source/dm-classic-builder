@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import CardItem from "@/components/CardItem";
+import Header from "@/components/Header";
+import DeckPanel from "@/components/DeckPanel";
+import DeckList from "@/components/DeckList";
 import { cards } from "@/data/cards";
 import { loadDecks, saveDecks } from "@/storage/deckStorage";
 import type { Card, Deck } from "@/types";
-import DeckPanel from "@/components/DeckPanel";
-import Header from "@/components/Header";
 
 export default function CardsPage() {
   const [keyword, setKeyword] = useState("");
   const [civilization, setCivilization] = useState("全部");
+  const [decks, setDecks] = useState<Deck[]>([]);
+  const [selectedDeckId, setSelectedDeckId] = useState("");
   const [deck, setDeck] = useState<Card[]>([]);
 
   const filteredCards = cards.filter((card) => {
@@ -23,10 +26,10 @@ export default function CardsPage() {
   });
 
   useEffect(() => {
-    const decks = loadDecks();
+    const savedDecks = loadDecks();
 
-    if (decks.length > 0) {
-      setDeck(decks[0].cards);
+    if (savedDecks.length > 0) {
+      setDeck(savedDecks[0].cards);
     }
   }, []);
 
@@ -69,6 +72,7 @@ export default function CardsPage() {
 
     setDeck(newDeck);
   };
+
   const clearDeck = () => {
     setDeck([]);
   };
@@ -101,13 +105,20 @@ export default function CardsPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-8">
+      <div className="grid grid-cols-4 gap-8">
+        {/* 左：デッキ一覧 */}
+        <div>
+          <DeckList selectedDeck="default" />
+        </div>
+
+        {/* 中央：カード一覧 */}
         <div className="col-span-2 space-y-4">
           {filteredCards.map((card) => (
             <CardItem key={card.id} card={card} onAdd={() => addCard(card)} />
           ))}
         </div>
 
+        {/* 右：現在のデッキ */}
         <div>
           <DeckPanel
             deck={deck}
