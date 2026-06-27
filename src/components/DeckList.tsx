@@ -6,6 +6,7 @@ type Props = {
   onSelect: (id: string) => void;
   onCreate: () => void;
   onRename: (id: string) => void;
+  onDelete: (id: string) => void;
 };
 
 export default function DeckList({
@@ -14,6 +15,7 @@ export default function DeckList({
   onSelect,
   onCreate,
   onRename,
+  onDelete,
 }: Props) {
   return (
     <div className="rounded-xl bg-white p-5 shadow">
@@ -54,6 +56,13 @@ export default function DeckList({
                 title="名前変更"
               >
                 ✏️
+              </button>
+              <button
+                onClick={() => onDelete(deck.id)}
+                className="ml-1 rounded px-2 py-1 hover:bg-red-100"
+                title="削除"
+              >
+                🗑️
               </button>
             </div>
           </div>

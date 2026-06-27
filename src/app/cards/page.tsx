@@ -157,6 +157,24 @@ export default function CardsPage() {
 
     setDecks(updatedDecks);
   };
+  const deleteDeck = (id: string) => {
+    if (decks.length === 1) {
+      alert("最後の1つのデッキは削除できません。");
+      return;
+    }
+
+    const ok = confirm("このデッキを削除しますか？");
+
+    if (!ok) return;
+
+    const updatedDecks = decks.filter((deck) => deck.id !== id);
+
+    setDecks(updatedDecks);
+
+    if (selectedDeckId === id) {
+      setSelectedDeckId(updatedDecks[0].id);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-gray-100 p-8">
@@ -195,6 +213,7 @@ export default function CardsPage() {
             onSelect={setSelectedDeckId}
             onCreate={createDeck}
             onRename={renameDeck}
+            onDelete={deleteDeck}
           />
         </div>
 
